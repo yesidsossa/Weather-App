@@ -15,7 +15,7 @@ class SearchViewController: UIViewController, SearchViewProtocol {
     // Elementos UI
     private let searchTextField: UITextField = {
         let textField = UITextField()
-        textField.placeholder = "Buscar ubicación..."
+        textField.placeholder = LocalizationManager.localizedString(forKey: LocalizedKeys.Search.placeholder)
         textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
         return textField

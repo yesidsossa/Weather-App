@@ -55,7 +55,10 @@ class WeatherDetailsViewController: UIViewController, WeatherDetailsViewProtocol
 
     func showWeatherDetails(_ details: WeatherDetails) {
         locationLabel.text = "\(details.location.name), \(details.location.country)"
-        currentTempLabel.text = "Temperatura Actual: \(details.current.temp_c)°C"
+        currentTempLabel.text = LocalizationManager.localizedString(
+            forKey: LocalizedKeys.WeatherDetails.temperature,
+            with: String(format: "%.1f", details.current.temp_c) 
+        )
         forecastDays = details.forecast.forecastday
         forecastTableView.reloadData()
     }

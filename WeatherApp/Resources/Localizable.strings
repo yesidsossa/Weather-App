@@ -1,0 +1,7 @@
+"search_placeholder" = "Buscar ubicación...";
+"search_error" = "Error";
+"search_no_results" = "No hay resultados para tu búsqueda.";
+"weather_temperature" = "Temperatura Actual: %@°C";
+"weather_detail_title" = "Detalles del Clima";
+"weather_favorites_title" = "Ubicaciones Favoritas";
+"weather_remove_favorite" = "Eliminar";
