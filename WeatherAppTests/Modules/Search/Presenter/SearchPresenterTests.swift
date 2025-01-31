@@ -16,31 +16,42 @@ class SearchPresenterTests: XCTestCase {
     }
 
     func testSearchLocation_CallsInteractor() {
-        // Act
         presenter.searchLocation(query: "New York")
 
-        // Assert
         XCTAssertTrue(mockInteractor.fetchLocationsCalled, "El interactor debería haber sido llamado")
         XCTAssertEqual(mockInteractor.queryReceived, "New York", "El query enviado debería ser 'New York'")
     }
 
     func testSearchLocation_ClearsResults_WhenQueryIsEmpty() {
-        // Act
         presenter.searchLocation(query: "")
 
-        // Assert
         XCTAssertTrue(mockView.locationsReceived.isEmpty, "La vista debería mostrar una lista vacía cuando el query está vacío")
     }
 
-    func testDidSelectLocation_CallsRouter() {
-        // Arrange
+    func testDidSelectLocation_CallsRouter_AndAddsToFavorites() {
         let location = Location(name: "New York", country: "USA")
 
-        // Act
         presenter.didSelectLocation(location: location)
 
-        // Assert
-        XCTAssertTrue(mockRouter.navigateToWeatherDetailsCalled, "El router debería haber sido llamado")
-        XCTAssertEqual(mockRouter.locationReceived?.name, "New York", "La ubicación enviada debería ser 'New York'")
+        XCTAssertTrue(mockInteractor.addFavoriteCalled, "El interactor debería haber agregado la ubicación a favoritos")
+        XCTAssertTrue(mockRouter.navigateToWeatherDetailsCalled, "El router debería haber navegado a detalles")
+    }
+
+    func testLoadFavorites_ShouldCallViewToDisplayFavorites() {
+        mockInteractor.favorites = [FavoriteLocation(name: "Paris", country: "France", temp: 22.0, icon: nil)]
+
+        presenter.loadFavorites()
+
+        XCTAssertTrue(mockView.showFavoritesCalled, "La vista debería haber actualizado la lista de favoritos")
+        XCTAssertEqual(mockView.favoritesReceived.count, 1, "Debería haber recibido 1 favorito")
+    }
+
+    func testRemoveFavorite_ShouldCallInteractor_AndReloadFavorites() {
+        let favorite = FavoriteLocation(name: "Paris", country: "France", temp: 22.0, icon: nil)
+
+        presenter.removeFavorite(location: favorite)
+
+        XCTAssertTrue(mockInteractor.removeFavoriteCalled, "El interactor debería haber eliminado el favorito")
+        XCTAssertTrue(mockView.showFavoritesCalled, "La vista debería haber actualizado la lista de favoritos")
     }
 }

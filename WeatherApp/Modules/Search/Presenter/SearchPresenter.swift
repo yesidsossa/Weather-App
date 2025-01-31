@@ -3,12 +3,14 @@ import Foundation
 protocol SearchPresenterProtocol {
     func searchLocation(query: String)
     func didSelectLocation(location: Location)
+    func loadFavorites()
+    func removeFavorite(location: FavoriteLocation) 
 }
 
 class SearchPresenter: SearchPresenterProtocol {
     private let interactor: SearchInteractorProtocol
     private let view: SearchViewProtocol
-    private let router: SearchRouterProtocol // Se agrega el Router
+    private let router: SearchRouterProtocol
 
     init(interactor: SearchInteractorProtocol, view: SearchViewProtocol, router: SearchRouterProtocol) {
         self.interactor = interactor
@@ -35,6 +37,18 @@ class SearchPresenter: SearchPresenterProtocol {
     }
 
     func didSelectLocation(location: Location) {
+        interactor.addFavorite(location)
+        loadFavorites()
         router.navigateToWeatherDetails(from: view, location: location)
+    }
+
+    func loadFavorites() {
+        let favorites = interactor.getFavorites()
+        view.showFavorites(favorites)
+    }
+
+    func removeFavorite(location: FavoriteLocation) {
+        interactor.removeFavorite(location)
+        loadFavorites()
     }
 }
