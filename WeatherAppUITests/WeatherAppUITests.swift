@@ -42,8 +42,8 @@ class WeatherAppUITests: XCTestCase {
         let firstCell = app.tables["searchResultsTableView"].cells.element(boundBy: 0)
         XCTAssertTrue(firstCell.waitForExistence(timeout: 5), "Debería haber resultados en la búsqueda")
 
-        firstCell.tap() // Navegar al detalle
-        app.navigationBars.buttons.element(boundBy: 0).tap() // Regresar a la búsqueda
+        firstCell.tap() 
+        app.navigationBars.buttons.element(boundBy: 0).tap()
 
         let favoritesTable = app.tables["favoritesTableView"]
         XCTAssertTrue(favoritesTable.exists, "La tabla de favoritos debería existir")
@@ -63,6 +63,7 @@ class WeatherAppUITests: XCTestCase {
 
         removeButton.tap()
 
-        XCTAssertFalse(favoriteCell.waitForExistence(timeout: 5), "El favorito debería haber sido eliminado")
+        let isEmpty = favoritesTable.cells.count == 0
+        XCTAssertTrue(isEmpty, "La tabla de favoritos debería estar vacía después de eliminar")
     }
 }

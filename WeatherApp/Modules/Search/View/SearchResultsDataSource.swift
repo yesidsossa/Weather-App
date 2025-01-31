@@ -2,10 +2,10 @@ import UIKit
 
 class SearchResultsDataSource: NSObject, UITableViewDataSource, UITableViewDelegate {
     
-    weak var tableView: UITableView? // 🔥 Necesitamos una referencia al tableView
+    weak var tableView: UITableView?
     var locations: [Location] = [] {
         didSet {
-            tableView?.reloadData() // 🔥 Se actualiza automáticamente cuando se cambia locations
+            tableView?.reloadData()
         }
     }
     

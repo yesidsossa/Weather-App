@@ -18,11 +18,18 @@ class FavoritesDataSource: NSObject, UITableViewDataSource, UITableViewDelegate 
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "favoriteCell", for: indexPath) as! FavoriteCell
-        let favorite = favorites[indexPath.row]
-        cell.configure(with: favorite) {
-            self.didRemoveFavorite?(favorite)
-        }
-        return cell
+            let favorite = favorites[indexPath.row]
+            cell.configure(with: favorite) { [weak self] in
+                guard let self = self else { return }
+                
+                self.didRemoveFavorite?(favorite)
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.favorites.removeAll { $0.name == favorite.name }
+                    self.tableView?.reloadData()
+                }
+            }
+            return cell
     }
 
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {

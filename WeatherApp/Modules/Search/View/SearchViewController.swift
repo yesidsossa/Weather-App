@@ -10,41 +10,47 @@ class SearchViewController: UIViewController, SearchViewProtocol {
     
     var presenter: SearchPresenter?
 
-    private let searchTextField: UITextField = {
+    // MARK: - UI Elements
+    private lazy var searchTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = LocalizationManager.localizedString(forKey: LocalizedKeys.Search.placeholder)
         textField.borderStyle = .roundedRect
         textField.translatesAutoresizingMaskIntoConstraints = false
+        textField.delegate = self
+        textField.accessibilityIdentifier = "searchField"
         return textField
     }()
 
-    private let favoritesTableView: UITableView = {
+    private lazy var favoritesTableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.isHidden = true
+        tableView.delegate = favoritesDataSource
+        tableView.dataSource = favoritesDataSource
+        tableView.register(FavoriteCell.self, forCellReuseIdentifier: "favoriteCell")
+        tableView.accessibilityIdentifier = "favoritesTableView"
         return tableView
     }()
 
-    private let searchResultsTableView: UITableView = {
+    private lazy var searchResultsTableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.delegate = searchResultsDataSource
+        tableView.dataSource = searchResultsDataSource
+        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "searchCell")
+        tableView.accessibilityIdentifier = "searchResultsTableView"
         return tableView
     }()
 
-    // Separación de responsabilidades
+    // MARK: - Data Sources
     private let searchResultsDataSource = SearchResultsDataSource()
     private let favoritesDataSource = FavoritesDataSource()
 
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.view.backgroundColor = .white
-
         setupUI()
-        setupTableView()
-        
-        searchTextField.delegate = self
-        searchTextField.accessibilityIdentifier = "searchField"
-
+        setupEventHandlers()
         presenter?.loadFavorites()
     }
 
@@ -53,7 +59,9 @@ class SearchViewController: UIViewController, SearchViewProtocol {
         clearSearch()
     }
 
+    // MARK: - UI Setup
     private func setupUI() {
+        view.backgroundColor = .white
         view.addSubview(searchTextField)
         view.addSubview(favoritesTableView)
         view.addSubview(searchResultsTableView)
@@ -74,25 +82,10 @@ class SearchViewController: UIViewController, SearchViewProtocol {
             searchResultsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             searchResultsTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
         ])
-        
-        toggleFavoritesVisibility()
     }
 
-    private func setupTableView() {
-        // Configuración de la tabla de resultados de búsqueda
-        searchResultsDataSource.tableView = searchResultsTableView // 🔥 Asignamos la referencia
-        searchResultsTableView.delegate = searchResultsDataSource
-        searchResultsTableView.dataSource = searchResultsDataSource
-        searchResultsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "searchCell")
-        searchResultsTableView.accessibilityIdentifier = "searchResultsTableView"
-
-        // Configuración de la tabla de favoritos
-        favoritesTableView.delegate = favoritesDataSource
-        favoritesTableView.dataSource = favoritesDataSource
-        favoritesTableView.register(FavoriteCell.self, forCellReuseIdentifier: "favoriteCell")
-        favoritesTableView.accessibilityIdentifier = "favoritesTableView"
-
-        // Asignación de closures para manejar eventos
+    // MARK: - Event Handlers
+    private func setupEventHandlers() {
         searchResultsDataSource.didSelectLocation = { [weak self] location in
             self?.presenter?.didSelectLocation(location: location)
         }
@@ -154,7 +147,7 @@ extension SearchViewController: UITextFieldDelegate {
         let currentText = textField.text ?? ""
         let updatedText = (currentText as NSString).replacingCharacters(in: range, with: string)
 
-        print("Buscando: \(updatedText)") // 🔥 Log para depuración
+        print("Buscando: \(updatedText)") 
 
         presenter?.searchLocation(query: updatedText)
         return true
