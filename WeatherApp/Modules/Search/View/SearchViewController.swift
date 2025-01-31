@@ -41,15 +41,18 @@ class SearchViewController: UIViewController, SearchViewProtocol {
         setupUI()
 
         searchTextField.delegate = self
+        searchTextField.accessibilityIdentifier = "searchField"
 
         searchResultsTableView.delegate = self
         searchResultsTableView.dataSource = self
         searchResultsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "searchCell")
-
+        searchResultsTableView.accessibilityIdentifier = "searchResultsTableView"
+        
         favoritesTableView.delegate = self
         favoritesTableView.dataSource = self
         favoritesTableView.register(FavoriteCell.self, forCellReuseIdentifier: "favoriteCell")
-
+        favoritesTableView.accessibilityIdentifier = "favoritesTableView"
+        
         presenter?.loadFavorites()
     }
 
@@ -218,6 +221,7 @@ class FavoriteCell: UITableViewCell {
     func configure(with favorite: FavoriteLocation, removeAction: @escaping () -> Void) {
         titleLabel.text = "\(favorite.name), \(favorite.country)"
         self.removeAction = removeAction
+        removeButton.accessibilityIdentifier = "Eliminar"
     }
 
     @objc private func removeTapped() {

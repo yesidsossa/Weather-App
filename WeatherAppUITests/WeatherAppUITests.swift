@@ -1,43 +1,67 @@
-//
-//  WeatherAppUITests.swift
-//  WeatherAppUITests
-//
-//  Created by Yesid Hernandez on 30/01/25.
-//
-
 import XCTest
 
-final class WeatherAppUITests: XCTestCase {
-
-    override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
+class WeatherAppUITests: XCTestCase {
+    
+    let app = XCUIApplication()
+    
+    override func setUp() {
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
         app.launch()
-
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
 
-    @MainActor
-    func testLaunchPerformance() throws {
-        if #available(macOS 10.15, iOS 13.0, tvOS 13.0, watchOS 7.0, *) {
-            // This measures how long it takes to launch your application.
-            measure(metrics: [XCTApplicationLaunchMetric()]) {
-                XCUIApplication().launch()
-            }
-        }
+    func testSearchLocation_ShowsResults() {
+        let searchField = app.textFields["Buscar ubicación..."]
+        XCTAssertTrue(searchField.exists, "El campo de búsqueda debería existir")
+        
+        searchField.tap()
+        searchField.typeText("New York")
+        
+        let firstCell = app.tables["searchResultsTableView"].cells.element(boundBy: 0)
+        XCTAssertTrue(firstCell.waitForExistence(timeout: 5), "Se deberían mostrar resultados de búsqueda")
+    }
+
+    func testSelectLocation_NavigatesToDetail() {
+        let searchField = app.textFields["Buscar ubicación..."]
+        searchField.tap()
+        searchField.typeText("Paris")
+
+        let firstCell = app.tables["searchResultsTableView"].cells.element(boundBy: 0)
+        XCTAssertTrue(firstCell.waitForExistence(timeout: 5), "Debería haber al menos un resultado en la búsqueda")
+
+        firstCell.tap()
+
+        let detailView = app.staticTexts["currentTempLabel"]
+        XCTAssertTrue(detailView.waitForExistence(timeout: 10), "Debería navegar a la pantalla de detalles")
+    }
+
+    func testAddToFavorites_ShowsInFavoritesList() {
+        let searchField = app.textFields["Buscar ubicación..."]
+        searchField.tap()
+        searchField.typeText("Berlin")
+
+        let firstCell = app.tables["searchResultsTableView"].cells.element(boundBy: 0)
+        XCTAssertTrue(firstCell.waitForExistence(timeout: 5), "Debería haber resultados en la búsqueda")
+
+        firstCell.tap() // Navegar al detalle
+        app.navigationBars.buttons.element(boundBy: 0).tap() // Regresar a la búsqueda
+
+        let favoritesTable = app.tables["favoritesTableView"]
+        XCTAssertTrue(favoritesTable.exists, "La tabla de favoritos debería existir")
+        
+        let favoriteCell = favoritesTable.cells.element(boundBy: 0)
+        XCTAssertTrue(favoriteCell.waitForExistence(timeout: 5), "La ubicación debería aparecer en la lista de favoritos")
+    }
+
+    func testRemoveFromFavorites_HidesFromList() {
+        let favoritesTable = app.tables["favoritesTableView"]
+        let favoriteCell = favoritesTable.cells.element(boundBy: 0)
+
+        XCTAssertTrue(favoriteCell.waitForExistence(timeout: 5), "Debería haber al menos un favorito para eliminar")
+
+        let removeButton = favoriteCell.buttons["Eliminar"]
+        XCTAssertTrue(removeButton.exists, "El botón de eliminar debería estar presente")
+
+        removeButton.tap()
+        XCTAssertFalse(favoriteCell.waitForExistence(timeout: 5), "El favorito debería haber sido eliminado")
     }
 }

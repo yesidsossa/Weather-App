@@ -29,6 +29,7 @@ class WeatherDetailsViewController: UIViewController, WeatherDetailsViewProtocol
         currentTempLabel.textAlignment = .center
         currentTempLabel.font = UIFont.systemFont(ofSize: 20)
         currentTempLabel.translatesAutoresizingMaskIntoConstraints = false
+        currentTempLabel.accessibilityIdentifier = "currentTempLabel"
 
         forecastTableView.translatesAutoresizingMaskIntoConstraints = false
         forecastTableView.dataSource = self
