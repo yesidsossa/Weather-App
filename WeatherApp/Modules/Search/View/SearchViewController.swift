@@ -9,10 +9,7 @@ protocol SearchViewProtocol {
 class SearchViewController: UIViewController, SearchViewProtocol {
     
     var presenter: SearchPresenter?
-    var locations: [Location] = []
-    var favorites: [FavoriteLocation] = []
 
-    // Elementos UI
     private let searchTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = LocalizationManager.localizedString(forKey: LocalizedKeys.Search.placeholder)
@@ -24,7 +21,7 @@ class SearchViewController: UIViewController, SearchViewProtocol {
     private let favoritesTableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
-        tableView.isHidden = true // Inicialmente oculto hasta que haya favoritos
+        tableView.isHidden = true
         return tableView
     }()
 
@@ -34,25 +31,20 @@ class SearchViewController: UIViewController, SearchViewProtocol {
         return tableView
     }()
 
+    // Separación de responsabilidades
+    private let searchResultsDataSource = SearchResultsDataSource()
+    private let favoritesDataSource = FavoritesDataSource()
+
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
 
         setupUI()
-
+        setupTableView()
+        
         searchTextField.delegate = self
         searchTextField.accessibilityIdentifier = "searchField"
 
-        searchResultsTableView.delegate = self
-        searchResultsTableView.dataSource = self
-        searchResultsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "searchCell")
-        searchResultsTableView.accessibilityIdentifier = "searchResultsTableView"
-        
-        favoritesTableView.delegate = self
-        favoritesTableView.dataSource = self
-        favoritesTableView.register(FavoriteCell.self, forCellReuseIdentifier: "favoriteCell")
-        favoritesTableView.accessibilityIdentifier = "favoritesTableView"
-        
         presenter?.loadFavorites()
     }
 
@@ -86,9 +78,38 @@ class SearchViewController: UIViewController, SearchViewProtocol {
         toggleFavoritesVisibility()
     }
 
+    private func setupTableView() {
+        // Configuración de la tabla de resultados de búsqueda
+        searchResultsDataSource.tableView = searchResultsTableView // 🔥 Asignamos la referencia
+        searchResultsTableView.delegate = searchResultsDataSource
+        searchResultsTableView.dataSource = searchResultsDataSource
+        searchResultsTableView.register(UITableViewCell.self, forCellReuseIdentifier: "searchCell")
+        searchResultsTableView.accessibilityIdentifier = "searchResultsTableView"
+
+        // Configuración de la tabla de favoritos
+        favoritesTableView.delegate = favoritesDataSource
+        favoritesTableView.dataSource = favoritesDataSource
+        favoritesTableView.register(FavoriteCell.self, forCellReuseIdentifier: "favoriteCell")
+        favoritesTableView.accessibilityIdentifier = "favoritesTableView"
+
+        // Asignación de closures para manejar eventos
+        searchResultsDataSource.didSelectLocation = { [weak self] location in
+            self?.presenter?.didSelectLocation(location: location)
+        }
+
+        favoritesDataSource.didSelectFavorite = { [weak self] favorite in
+            let location = Location(name: favorite.name, country: favorite.country)
+            self?.presenter?.didSelectLocation(location: location)
+        }
+
+        favoritesDataSource.didRemoveFavorite = { [weak self] favorite in
+            self?.presenter?.removeFavorite(location: favorite)
+        }
+    }
+
     // MARK: - SearchViewProtocol
     func showLocations(_ locations: [Location]) {
-        self.locations = locations
+        searchResultsDataSource.locations = locations
         DispatchQueue.main.async {
             self.toggleFavoritesVisibility()
             self.searchResultsTableView.reloadData()
@@ -96,7 +117,7 @@ class SearchViewController: UIViewController, SearchViewProtocol {
     }
 
     func showFavorites(_ favorites: [FavoriteLocation]) {
-        self.favorites = favorites
+        favoritesDataSource.favorites = favorites
         DispatchQueue.main.async {
             self.toggleFavoritesVisibility()
             self.favoritesTableView.reloadData()
@@ -112,7 +133,7 @@ class SearchViewController: UIViewController, SearchViewProtocol {
     }
 
     private func toggleFavoritesVisibility() {
-        let hasFavorites = !favorites.isEmpty
+        let hasFavorites = !favoritesDataSource.favorites.isEmpty
         let isSearching = !(searchTextField.text?.isEmpty ?? true)
 
         favoritesTableView.isHidden = !hasFavorites || isSearching
@@ -121,7 +142,7 @@ class SearchViewController: UIViewController, SearchViewProtocol {
 
     private func clearSearch() {
         searchTextField.text = ""
-        locations = []
+        searchResultsDataSource.locations = []
         searchResultsTableView.reloadData()
         toggleFavoritesVisibility()
     }
@@ -133,98 +154,9 @@ extension SearchViewController: UITextFieldDelegate {
         let currentText = textField.text ?? ""
         let updatedText = (currentText as NSString).replacingCharacters(in: range, with: string)
 
+        print("Buscando: \(updatedText)") // 🔥 Log para depuración
+
         presenter?.searchLocation(query: updatedText)
         return true
-    }
-}
-
-// MARK: - UITableViewDataSource
-extension SearchViewController: UITableViewDataSource {
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        if tableView == searchResultsTableView {
-            return locations.count
-        } else if tableView == favoritesTableView {
-            return favorites.count
-        }
-        return 0
-    }
-
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        if tableView == searchResultsTableView {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "searchCell", for: indexPath)
-            let location = locations[indexPath.row]
-            cell.textLabel?.text = "\(location.name), \(location.country)"
-            return cell
-        } else {
-            let cell = tableView.dequeueReusableCell(withIdentifier: "favoriteCell", for: indexPath) as! FavoriteCell
-            let favorite = favorites[indexPath.row]
-            cell.configure(with: favorite) {
-                self.presenter?.removeFavorite(location: favorite)
-            }
-            return cell
-        }
-    }
-}
-
-// MARK: - UITableViewDelegate
-extension SearchViewController: UITableViewDelegate {
-    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        if tableView == searchResultsTableView {
-            let selectedLocation = locations[indexPath.row]
-            presenter?.didSelectLocation(location: selectedLocation)
-        } else {
-            let selectedFavorite = favorites[indexPath.row]
-            let location = Location(
-                name: selectedFavorite.name,
-                country: selectedFavorite.country
-            )
-            presenter?.didSelectLocation(location: location)
-        }
-    }
-}
-
-// MARK: - Custom Favorite Cell
-class FavoriteCell: UITableViewCell {
-    
-    private let titleLabel = UILabel()
-    private let removeButton = UIButton()
-
-    var removeAction: (() -> Void)?
-
-    override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
-        super.init(style: style, reuseIdentifier: reuseIdentifier)
-        
-        titleLabel.translatesAutoresizingMaskIntoConstraints = false
-        removeButton.translatesAutoresizingMaskIntoConstraints = false
-        
-        let trashImage = UIImage(systemName: "trash.fill") // Usa un ícono de SF Symbols
-        removeButton.setImage(trashImage, for: .normal)
-        removeButton.tintColor = .red // Color rojo para indicar eliminación
-        removeButton.addTarget(self, action: #selector(removeTapped), for: .touchUpInside)
-
-        contentView.addSubview(titleLabel)
-        contentView.addSubview(removeButton)
-
-        NSLayoutConstraint.activate([
-            titleLabel.leadingAnchor.constraint(equalTo: contentView.leadingAnchor, constant: 16),
-            titleLabel.centerYAnchor.constraint(equalTo: contentView.centerYAnchor),
-
-            removeButton.trailingAnchor.constraint(equalTo: contentView.trailingAnchor, constant: -16),
-            removeButton.centerYAnchor.constraint(equalTo: contentView.centerYAnchor)
-        ])
-    }
-
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    func configure(with favorite: FavoriteLocation, removeAction: @escaping () -> Void) {
-        titleLabel.text = "\(favorite.name), \(favorite.country)"
-        self.removeAction = removeAction
-        removeButton.accessibilityIdentifier = "Eliminar"
-    }
-
-    @objc private func removeTapped() {
-        removeAction?()
     }
 }

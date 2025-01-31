@@ -62,6 +62,7 @@ class WeatherAppUITests: XCTestCase {
         XCTAssertTrue(removeButton.exists, "El botón de eliminar debería estar presente")
 
         removeButton.tap()
+
         XCTAssertFalse(favoriteCell.waitForExistence(timeout: 5), "El favorito debería haber sido eliminado")
     }
 }
