@@ -5,6 +5,8 @@ class MockWeatherRepository: WeatherRepositoryProtocol {
     var shouldReturnError = false
     var mockLocations: [Location] = []
     var mockWeatherDetails: WeatherDetails?
+    var fetchWeatherDetailsCalled = false
+    var locationReceived: String?
 
     func fetchLocations(query: String, completion: @escaping (Result<[Location], Error>) -> Void) {
         if shouldReturnError {
@@ -15,6 +17,9 @@ class MockWeatherRepository: WeatherRepositoryProtocol {
     }
 
     func fetchWeatherDetails(location: String, completion: @escaping (Result<WeatherDetails, Error>) -> Void) {
+        fetchWeatherDetailsCalled = true
+        locationReceived = location 
+
         if shouldReturnError {
             completion(.failure(NSError(domain: "Test", code: -1, userInfo: [NSLocalizedDescriptionKey: "Error simulado"])))
         } else if let details = mockWeatherDetails {
