@@ -26,9 +26,49 @@ class SearchPresenter: SearchPresenterProtocol {
 
         interactor.fetchLocations(query: query) { [weak self] result in
             DispatchQueue.main.async {
+                self?.handleSearchResult(result)
+            }
+        }
+    }
+
+    private func handleSearchResult(_ result: Result<[Location], Error>) {
+        switch result {
+        case .success(let locations):
+            view.showLocations(locations)
+        case .failure(let error):
+            view.showError(error.localizedDescription)
+        }
+    }
+
+    func didSelectLocation(location: Location) {
+        interactor.addFavorite(location) { [weak self] result in
+            DispatchQueue.main.async {
                 switch result {
-                case .success(let locations):
-                    self?.view.showLocations(locations)
+                case .success:
+                    self?.loadFavorites()
+                case .failure(let error):
+                    self?.view.showError(error.localizedDescription)
+                }
+            }
+        }
+        coordinator.navigateToWeatherDetails(for: location)
+    }
+
+    func loadFavorites() {
+        switch interactor.getFavorites() {
+        case .success(let favorites):
+            view.showFavorites(favorites)
+        case .failure(let error):
+            view.showError(error.localizedDescription)
+        }
+    }
+
+    func removeFavorite(location: FavoriteLocation) {
+        interactor.removeFavorite(location) { [weak self] result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    self?.loadFavorites()
                 case .failure(let error):
                     self?.view.showError(error.localizedDescription)
                 }
@@ -36,19 +76,5 @@ class SearchPresenter: SearchPresenterProtocol {
         }
     }
 
-    func didSelectLocation(location: Location) {
-        interactor.addFavorite(location)
-        loadFavorites()
-        coordinator.navigateToWeatherDetails(for: location)
-    }
-
-    func loadFavorites() {
-        let favorites = interactor.getFavorites()
-        view.showFavorites(favorites)
-    }
-
-    func removeFavorite(location: FavoriteLocation) {
-        interactor.removeFavorite(location)
-        loadFavorites()
-    }
 }
+

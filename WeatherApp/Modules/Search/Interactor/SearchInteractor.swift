@@ -2,10 +2,11 @@ import Foundation
 
 protocol SearchInteractorProtocol {
     func fetchLocations(query: String, completion: @escaping (Result<[Location], Error>) -> Void)
-    func getFavorites() -> [FavoriteLocation]
-    func addFavorite(_ location: Location)
-    func removeFavorite(_ location: FavoriteLocation)
+    func getFavorites() -> Result<[FavoriteLocation], Error>
+    func addFavorite(_ location: Location, completion: @escaping (Result<Void, Error>) -> Void)
+    func removeFavorite(_ location: FavoriteLocation, completion: @escaping (Result<Void, Error>) -> Void)
 }
+
 
 class SearchInteractor: SearchInteractorProtocol {
     private let repository: WeatherRepositoryProtocol
@@ -18,19 +19,27 @@ class SearchInteractor: SearchInteractorProtocol {
     }
 
     func fetchLocations(query: String, completion: @escaping (Result<[Location], Error>) -> Void) {
-        repository.fetchLocations(query: query, completion: completion)
+        repository.fetchLocations(query: query) { result in
+            switch result {
+            case .success(let locations):
+                completion(.success(locations))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
 
-    func getFavorites() -> [FavoriteLocation] {
+   
+    func getFavorites() -> Result<[FavoriteLocation], Error> {
         return favoritesRepository.getFavorites()
     }
 
-    func addFavorite(_ location: Location) {
+    func addFavorite(_ location: Location, completion: @escaping (Result<Void, Error>) -> Void) {
         let favorite = FavoriteLocation(name: location.name, country: location.country, temp: nil, icon: nil)
-        favoritesRepository.addFavorite(favorite)
+        completion(favoritesRepository.addFavorite(favorite))
     }
-    
-    func removeFavorite(_ location: FavoriteLocation) {
-           favoritesRepository.removeFavorite(location) 
-       }
+
+    func removeFavorite(_ location: FavoriteLocation, completion: @escaping (Result<Void, Error>) -> Void) {
+        completion(favoritesRepository.removeFavorite(location))
+    }
 }

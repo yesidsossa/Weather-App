@@ -5,6 +5,7 @@ protocol WeatherRepositoryProtocol {
     func fetchWeatherDetails(location: String, completion: @escaping (Result<WeatherDetails, Error>) -> Void)
 }
 
+
 class WeatherRepository: WeatherRepositoryProtocol {
     private let remoteDataSource: WeatherRemoteDataSourceProtocol
 
@@ -17,6 +18,13 @@ class WeatherRepository: WeatherRepositoryProtocol {
     }
 
     func fetchWeatherDetails(location: String, completion: @escaping (Result<WeatherDetails, Error>) -> Void) {
-        remoteDataSource.fetchWeatherDetails(location: location, completion: completion)
+        remoteDataSource.fetchWeatherDetails(location: location) { result in
+            switch result {
+            case .success(let weatherDetails):
+                completion(.success(weatherDetails))
+            case .failure(let error):
+                completion(.failure(error)) 
+            }
+        }
     }
 }

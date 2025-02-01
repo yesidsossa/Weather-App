@@ -25,13 +25,18 @@ class WeatherDetailsPresenter: WeatherDetailsPresenterProtocol {
     func loadWeatherDetails() {
         interactor.fetchWeatherDetails(location: location) { [weak self] result in
             DispatchQueue.main.async {
-                switch result {
-                case .success(let details):
-                    self?.view.showWeatherDetails(details)
-                case .failure(let error):
-                    self?.view.showError(error.localizedDescription)
-                }
+                self?.handleWeatherDetailsResult(result)
             }
         }
     }
+
+    private func handleWeatherDetailsResult(_ result: Result<WeatherDetails, Error>) {
+        switch result {
+        case .success(let details):
+            view.showWeatherDetails(details)
+        case .failure(let error):
+            view.showError(error.localizedDescription) 
+        }
+    }
+
 }

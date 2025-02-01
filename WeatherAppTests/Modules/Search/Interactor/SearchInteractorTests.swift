@@ -35,16 +35,76 @@ class SearchInteractorTests: XCTestCase {
     func testAddFavorite_ShouldSaveToFavoritesRepository() {
         let location = Location(name: "Paris", country: "France")
 
-        interactor.addFavorite(location)
+        let expectation = self.expectation(description: "Agregar favorito")
+        
+        interactor.addFavorite(location) { result in
+            switch result {
+            case .success:
+                XCTAssertTrue(self.mockFavoritesRepository.addFavoriteCalled, "El repositorio de favoritos debería haber guardado la ubicación")
+            case .failure:
+                XCTFail("No debería haber fallado al agregar un favorito")
+            }
+            expectation.fulfill()
+        }
 
-        XCTAssertTrue(mockFavoritesRepository.addFavoriteCalled, "El repositorio de favoritos debería haber guardado la ubicación")
+        waitForExpectations(timeout: 1, handler: nil)
     }
 
     func testRemoveFavorite_ShouldDeleteFromFavoritesRepository() {
         let favorite = FavoriteLocation(name: "Paris", country: "France", temp: nil, icon: nil)
 
-        interactor.removeFavorite(favorite)
+        let expectation = self.expectation(description: "Eliminar favorito")
 
-        XCTAssertTrue(mockFavoritesRepository.removeFavoriteCalled, "El repositorio de favoritos debería haber eliminado la ubicación")
+        interactor.removeFavorite(favorite) { result in
+            switch result {
+            case .success:
+                XCTAssertTrue(self.mockFavoritesRepository.removeFavoriteCalled, "El repositorio de favoritos debería haber eliminado la ubicación")
+            case .failure:
+                XCTFail("No debería haber fallado al eliminar un favorito")
+            }
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 1, handler: nil)
     }
+    
+    func testAddFavorite_WhenRepositoryFails_ShouldReturnError() {
+        let location = Location(name: "Paris", country: "France")
+        mockFavoritesRepository.shouldReturnError = true
+
+        let expectation = self.expectation(description: "Agregar favorito falla")
+
+        interactor.addFavorite(location) { result in
+            switch result {
+            case .success:
+                XCTFail("No debería haber guardado un favorito cuando hay error")
+            case .failure(let error):
+                XCTAssertEqual(error.localizedDescription, "Error al agregar favorito")
+            }
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 1, handler: nil)
+    }
+
+    func testRemoveFavorite_WhenRepositoryFails_ShouldReturnError() {
+        let favorite = FavoriteLocation(name: "Paris", country: "France", temp: nil, icon: nil)
+        mockFavoritesRepository.shouldReturnError = true
+
+        let expectation = self.expectation(description: "Eliminar favorito falla")
+
+        interactor.removeFavorite(favorite) { result in
+            switch result {
+            case .success:
+                XCTFail("No debería haber eliminado un favorito cuando hay error")
+            case .failure(let error):
+                XCTAssertEqual(error.localizedDescription, "Error al eliminar favorito")
+            }
+            expectation.fulfill()
+        }
+
+        waitForExpectations(timeout: 1, handler: nil)
+    }
+
+
 }

@@ -51,9 +51,41 @@ class SearchPresenterTests: XCTestCase {
     func testRemoveFavorite_ShouldCallInteractor_AndReloadFavorites() {
         let favorite = FavoriteLocation(name: "Paris", country: "France", temp: 22.0, icon: nil)
 
+        let expectation = self.expectation(description: "Espera que removeFavorite se complete")
+        
         presenter.removeFavorite(location: favorite)
 
-        XCTAssertTrue(mockInteractor.removeFavoriteCalled, "El interactor debería haber eliminado el favorito")
-        XCTAssertTrue(mockView.showFavoritesCalled, "La vista debería haber actualizado la lista de favoritos")
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { 
+            XCTAssertTrue(self.mockInteractor.removeFavoriteCalled, "El interactor debería haber eliminado el favorito")
+            XCTAssertTrue(self.mockView.showFavoritesCalled, "La vista debería haber actualizado la lista de favoritos")
+            expectation.fulfill()
+        }
+
+        wait(for: [expectation], timeout: 1.0)
     }
+
+    
+    func testSearchLocation_ShowsError_OnFailure() {
+        // Arrange
+        mockInteractor.shouldReturnError = true
+        
+        let expectation = self.expectation(description: "Esperando que showError sea llamado")
+
+        mockView.showErrorCalled = false
+        mockView.errorMessageReceived = nil
+
+        // Act
+        presenter.searchLocation(query: "Invalid Query")
+
+        // Esperamos a que la ejecución del callback ocurra
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            XCTAssertTrue(self.mockView.showErrorCalled, "La vista debería haber llamado a showError")
+            XCTAssertEqual(self.mockView.errorMessageReceived, "Error simulado", "El mensaje de error debe ser el esperado")
+            expectation.fulfill()
+        }
+
+        // Esperamos un tiempo prudente para que la ejecución asincrónica ocurra
+        wait(for: [expectation], timeout: 2)
+    }
+
 }

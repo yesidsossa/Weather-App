@@ -118,12 +118,15 @@ class SearchViewController: UIViewController, SearchViewProtocol {
     }
 
     func showError(_ message: String) {
+        guard !(searchTextField.text?.isEmpty ?? true) else { return } 
+        
         DispatchQueue.main.async {
             let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default))
             self.present(alert, animated: true)
         }
     }
+
 
     private func toggleFavoritesVisibility() {
         let hasFavorites = !favoritesDataSource.favorites.isEmpty

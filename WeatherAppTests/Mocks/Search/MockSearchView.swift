@@ -6,6 +6,7 @@ class MockSearchView: SearchViewProtocol {
     var errorMessageReceived: String?
     var favoritesReceived: [FavoriteLocation] = []
     var showFavoritesCalled = false
+    var showErrorCalled = false
 
     func showLocations(_ locations: [Location]) {
         locationsReceived = locations
@@ -18,5 +19,6 @@ class MockSearchView: SearchViewProtocol {
 
     func showError(_ message: String) {
         errorMessageReceived = message
+        showErrorCalled = true  
     }
 }

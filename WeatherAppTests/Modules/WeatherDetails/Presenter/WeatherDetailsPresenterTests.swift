@@ -25,6 +25,7 @@ class WeatherDetailsPresenterTests: XCTestCase {
         )
 
         mockRepository.mockWeatherDetails = expectedWeatherDetails
+
         presenter.loadWeatherDetails()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
@@ -33,17 +34,21 @@ class WeatherDetailsPresenterTests: XCTestCase {
         }
     }
 
+
     func testLoadWeatherDetails_Failure() {
         mockRepository.shouldReturnError = true
         presenter.loadWeatherDetails()
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            XCTAssertNotNil(self.mockView.errorMessageReceived, "Se esperaba un mensaje de error")
             XCTAssertEqual(self.mockView.errorMessageReceived, "Error simulado")
         }
     }
 
+
     func testNavigateBack_CallsCoordinator() {
         presenter.navigateBack()
-        XCTAssertTrue(mockCoordinator.didNavigateBack, "El coordinator debería haber manejado la navegación de regreso")
+        XCTAssertTrue(mockCoordinator.didNavigateBack, "El coordinador debería haber manejado la navegación de regreso")
     }
+
 }
