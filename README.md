@@ -67,3 +67,20 @@ Se implementaron pruebas en **XCTest** para garantizar la estabilidad del códig
 **Ejecutar las pruebas:**
 ```bash
 CMD + U  # En Xcode
+```
+## 📦 Instalación y Ejecución
+
+### 1️⃣ Clonar el repositorio
+```bash
+git clone https://github.com/tuusuario/weatherapp.git
+cd weatherapp
+```
+
+### 2️⃣ Instalar dependencia
+```bash
+pod install 
+```
+### 3️⃣ Abrir el proyecto en Xcode
+```bash
+xed .
+```
