@@ -25,16 +25,17 @@ class WeatherAppUITests: XCTestCase {
         searchField.typeText("Paris")
 
         let firstCell = app.tables["searchResultsTableView"].cells.element(boundBy: 0)
-
+        
         XCTAssertTrue(firstCell.waitForExistence(timeout: 8), "Debería haber al menos un resultado en la búsqueda")
 
-        app.tap()
         firstCell.tap()
 
         let detailView = app.staticTexts["currentTempLabel"]
         
         XCTAssertTrue(detailView.waitForExistence(timeout: 10), "Debería navegar a la pantalla de detalles")
     }
+
+
 
 
     func testAddToFavorites_ShowsInFavoritesList() {

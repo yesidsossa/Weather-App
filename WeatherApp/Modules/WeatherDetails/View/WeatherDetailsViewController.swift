@@ -18,6 +18,7 @@ class WeatherDetailsViewController: UIViewController, WeatherDetailsViewProtocol
         super.viewDidLoad()
         view.backgroundColor = .white
         setupUI()
+        setupNavigationBar()  // 🔥 Se agrega el botón de "Atrás"
         presenter?.loadWeatherDetails()
     }
 
@@ -53,11 +54,24 @@ class WeatherDetailsViewController: UIViewController, WeatherDetailsViewProtocol
         ])
     }
 
+    private func setupNavigationBar() {
+        navigationItem.leftBarButtonItem = UIBarButtonItem(
+            title: "Back",
+            style: .plain,
+            target: self,
+            action: #selector(backButtonTapped)
+        )
+    }
+
+    @objc private func backButtonTapped() {
+        presenter?.navigateBack()  
+    }
+
     func showWeatherDetails(_ details: WeatherDetails) {
         locationLabel.text = "\(details.location.name), \(details.location.country)"
         currentTempLabel.text = LocalizationManager.localizedString(
             forKey: LocalizedKeys.WeatherDetails.temperature,
-            with: String(format: "%.1f", details.current.temp_c) 
+            with: String(format: "%.1f", details.current.temp_c)
         )
         forecastDays = details.forecast.forecastday
         forecastTableView.reloadData()

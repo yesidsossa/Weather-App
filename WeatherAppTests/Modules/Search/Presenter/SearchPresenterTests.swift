@@ -5,14 +5,15 @@ class SearchPresenterTests: XCTestCase {
     var presenter: SearchPresenter!
     var mockInteractor: MockSearchInteractor!
     var mockView: MockSearchView!
-    var mockRouter: MockSearchRouter!
+    var mockCoordinator: MockCoordinator!
 
     override func setUp() {
         super.setUp()
+        let navController = UINavigationController() 
         mockInteractor = MockSearchInteractor()
         mockView = MockSearchView()
-        mockRouter = MockSearchRouter()
-        presenter = SearchPresenter(interactor: mockInteractor, view: mockView, router: mockRouter)
+        mockCoordinator = MockCoordinator(navigationController: navController) 
+        presenter = SearchPresenter(interactor: mockInteractor, view: mockView, coordinator: mockCoordinator)
     }
 
     func testSearchLocation_CallsInteractor() {
@@ -28,13 +29,14 @@ class SearchPresenterTests: XCTestCase {
         XCTAssertTrue(mockView.locationsReceived.isEmpty, "La vista debería mostrar una lista vacía cuando el query está vacío")
     }
 
-    func testDidSelectLocation_CallsRouter_AndAddsToFavorites() {
+    func testDidSelectLocation_CallsCoordinator_AndAddsToFavorites() {
         let location = Location(name: "New York", country: "USA")
 
         presenter.didSelectLocation(location: location)
 
         XCTAssertTrue(mockInteractor.addFavoriteCalled, "El interactor debería haber agregado la ubicación a favoritos")
-        XCTAssertTrue(mockRouter.navigateToWeatherDetailsCalled, "El router debería haber navegado a detalles")
+        XCTAssertTrue(mockCoordinator.didNavigateToWeatherDetails, "El coordinator debería haber manejado la navegación")
+        XCTAssertEqual(mockCoordinator.receivedLocation?.name, "New York", "Se debería haber pasado correctamente la ubicación")
     }
 
     func testLoadFavorites_ShouldCallViewToDisplayFavorites() {

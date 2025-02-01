@@ -10,17 +10,20 @@ import UIKit
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     var window: UIWindow?
+    var appCoordinator: AppCoordinator?
 
     private let weatherRepository = WeatherRepository()
 
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         guard let windowScene = (scene as? UIWindowScene) else { return }
 
-          let window = UIWindow(windowScene: windowScene)
-          let rootViewController = SplashRouter.createModule()
-          window.rootViewController = rootViewController
-          self.window = window
-          window.makeKeyAndVisible()
+        let window = UIWindow(windowScene: windowScene)
+        let repository = WeatherRepository()
+
+        appCoordinator = AppCoordinator(window: window, repository: repository)
+        appCoordinator?.start()
+
+        self.window = window
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
