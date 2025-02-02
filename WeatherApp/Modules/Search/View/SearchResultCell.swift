@@ -35,6 +35,7 @@ class SearchResultCell: UITableViewCell {
         let button = UIButton(type: .system)
         button.translatesAutoresizingMaskIntoConstraints = false
         button.tintColor = .gray
+        button.accessibilityIdentifier = "favoriteButton" 
         return button
     }()
 

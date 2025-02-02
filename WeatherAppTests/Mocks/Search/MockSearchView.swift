@@ -19,6 +19,10 @@ class MockSearchView: SearchViewProtocol {
 
     func showError(_ message: String) {
         errorMessageReceived = message
-        showErrorCalled = true  
+        showErrorCalled = true
+    }
+
+    func isFavorite(location: FavoriteLocation) -> Bool {
+        return favoritesReceived.contains(where: { $0.name == location.name })
     }
 }

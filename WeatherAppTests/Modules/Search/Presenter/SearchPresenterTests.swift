@@ -29,15 +29,20 @@ class SearchPresenterTests: XCTestCase {
         XCTAssertTrue(mockView.locationsReceived.isEmpty, "La vista debería mostrar una lista vacía cuando el query está vacío")
     }
 
-    func testDidSelectLocation_CallsCoordinator_AndAddsToFavorites() {
+    func testToggleFavorite_AddsAndRemovesFavoriteCorrectly() {
         let location = Location(name: "New York", country: "USA")
 
-        presenter.didSelectLocation(location: location)
+        presenter.toggleFavorite(location: location)
 
         XCTAssertTrue(mockInteractor.addFavoriteCalled, "El interactor debería haber agregado la ubicación a favoritos")
-        XCTAssertTrue(mockCoordinator.didNavigateToWeatherDetails, "El coordinator debería haber manejado la navegación")
-        XCTAssertEqual(mockCoordinator.receivedLocation?.name, "New York", "Se debería haber pasado correctamente la ubicación")
+        
+        mockView.favoritesReceived = [FavoriteLocation(name: "New York", country: "USA", temp: nil, icon: nil)]
+        
+        presenter.toggleFavorite(location: location)
+
+        XCTAssertTrue(mockInteractor.removeFavoriteCalled, "El interactor debería haber eliminado la ubicación de favoritos")
     }
+
 
     func testLoadFavorites_ShouldCallViewToDisplayFavorites() {
         mockInteractor.favorites = [FavoriteLocation(name: "Paris", country: "France", temp: 22.0, icon: nil)]

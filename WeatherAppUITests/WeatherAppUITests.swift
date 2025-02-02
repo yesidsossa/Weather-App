@@ -34,10 +34,7 @@ class WeatherAppUITests: XCTestCase {
         
         XCTAssertTrue(detailView.waitForExistence(timeout: 10), "Debería navegar a la pantalla de detalles")
     }
-
-
-
-
+    
     func testAddToFavorites_ShowsInFavoritesList() {
         let searchField = app.textFields["Buscar ubicación..."]
         XCTAssertTrue(searchField.waitForExistence(timeout: 8), "El campo de búsqueda debería existir")
@@ -45,22 +42,54 @@ class WeatherAppUITests: XCTestCase {
         searchField.tap()
         searchField.typeText("Berlin")
 
+        closeKeyboardIfNeeded()
+
         let firstCell = app.tables["searchResultsTableView"].cells.element(boundBy: 0)
-        XCTAssertTrue(firstCell.waitForExistence(timeout: 5), "Debería haber resultados en la búsqueda")
+        let exists = firstCell.waitForExistence(timeout: 10)
+        XCTAssertTrue(exists, "Debería haber resultados en la búsqueda")
+
+        let favoriteButton = firstCell.buttons["favoriteButton"]
+        XCTAssertTrue(favoriteButton.waitForExistence(timeout: 2), "El botón de favoritos debería existir en la celda")
+        favoriteButton.tap()
 
         firstCell.tap()
-        app.navigationBars.buttons.element(boundBy: 0).tap()
+
+        let backButton = app.buttons["backButton"]
+        XCTAssertTrue(backButton.exists, "El botón de retroceso debería existir")
+        backButton.tap()
+
+        clearSearchField(searchField)
 
         let favoritesTable = app.tables["favoritesTableView"]
-        XCTAssertTrue(favoritesTable.exists, "La tabla de favoritos debería existir")
-        
+        XCTAssertTrue(favoritesTable.waitForExistence(timeout: 10), "La tabla de favoritos debería aparecer")
+
         let favoriteCell = favoritesTable.cells.element(boundBy: 0)
         XCTAssertTrue(favoriteCell.waitForExistence(timeout: 5), "La ubicación debería aparecer en la lista de favoritos")
     }
 
+    private func closeKeyboardIfNeeded() {
+        let returnKey = app.keyboards.keys["Return"]
+        if returnKey.exists {
+            returnKey.tap()
+        } else {
+            app.tap()
+        }
+    }
+
+    private func clearSearchField(_ searchField: XCUIElement) {
+        let clearButton = searchField.buttons["Clear text"]
+        if clearButton.exists {
+            clearButton.tap()
+        } else {
+            searchField.tap()
+            searchField.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: 15))
+        }
+    }
+
+
     func testRemoveFromFavorites_HidesFromList() {
         let favoritesTable = app.tables["favoritesTableView"]
-        
+
         XCTAssertTrue(favoritesTable.waitForExistence(timeout: 8), "La tabla de favoritos debería existir")
 
         let initialCellCount = favoritesTable.cells.count
@@ -73,11 +102,14 @@ class WeatherAppUITests: XCTestCase {
 
         removeButton.tap()
 
-        sleep(2)
-
-        let newCellCount = favoritesTable.cells.count
-
-        XCTAssertTrue(newCellCount < initialCellCount, "El favorito debería haber sido eliminado de la tabla")
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "count < %d", initialCellCount),
+            object: favoritesTable.cells
+        )
+        
+        let result = XCTWaiter().wait(for: [expectation], timeout: 5)
+        XCTAssertEqual(result, .completed, "El favorito debería haber sido eliminado de la tabla")
     }
+
 
 }

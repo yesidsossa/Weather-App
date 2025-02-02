@@ -100,6 +100,8 @@ class WeatherDetailsViewController: UIViewController, WeatherDetailsViewProtocol
             target: self,
             action: #selector(backButtonTapped)
         )
+        navigationItem.leftBarButtonItem?.accessibilityIdentifier = "backButton"
+
     }
 
     // MARK: - Actions
