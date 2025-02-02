@@ -48,6 +48,50 @@ El **Configurator Pattern** se utilizó para gestionar la inyección de dependen
 
 ---
 
+## 🚀 Integración Continua (CI)
+
+Este proyecto cuenta con un proceso de **Integración Continua (CI)** mediante **GitHub Actions**. Este flujo de trabajo se encarga de ejecutar las pruebas unitarias de Xcode en cada `push` o `pull request` a la rama `main`.
+
+### 📌 **¿Cómo funciona el CI?**
+1. En cada **push** o **pull request** a la rama `main`, se ejecuta un workflow definido en `.github/workflows/ci.yml`.
+2. Utiliza un runner de **macOS** con la última versión de **Xcode**.
+3. **Instala dependencias** si el proyecto usa CocoaPods.
+4. **Compila y ejecuta** las pruebas en un simulador de iPhone.
+5. Si todas las pruebas **pasan**, el workflow finaliza con éxito ✅.
+6. Si alguna prueba **falla**, GitHub mostrará un ❌ y no permitirá la fusión del PR hasta que los errores sean corregidos.
+
+### ⚙️ **Ejecución manual**
+Si deseas ejecutar las pruebas manualmente desde el terminal en tu máquina local, usa:
+```bash
+xcodebuild test \
+  -workspace WeatherApp.xcworkspace \
+  -scheme WeatherApp \
+  -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' \
+  CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+```
+
+
+### 📂 **Ubicación del archivo CI**
+El flujo de trabajo está definido en:
+```bash
+.github/workflows/ci.yml
+```
+
+### 📊 **Ver los resultados**
+Para ver la ejecución del workflow:
+1. **Ir a la pestaña "Actions"** en GitHub.
+2. Seleccionar el workflow **"iOS Unit Tests"**.
+3. Revisar los logs de la ejecución.
+
+### 🚀 **Beneficios del CI en el proyecto**
+- 📌 **Automatización**: No es necesario ejecutar pruebas manualmente en cada cambio.
+- 🔥 **Detección temprana de errores**: Si algo se rompe, lo sabremos inmediatamente.
+- 🛡️ **Calidad del código**: Garantizamos que solo código probado y funcional se fusione a `main`.
+- 💡 **Facilidad de integración**: Se ejecuta en cada `pull request`, asegurando estabilidad en el código base.
+
+🚀 **Con este sistema de CI aseguramos que nuestro código esté siempre en buen estado antes de ser fusionado.** 🚀
+---
+
 ## 🛠️ Tecnologías y Librerías Usadas
 | Tecnología | Descripción |
 |------------|------------|
