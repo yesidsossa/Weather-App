@@ -42,9 +42,9 @@ El **Configurator Pattern** se utilizó para gestionar la inyección de dependen
 
 ## 📸 Capturas de la Aplicación
 
-| Splash | Búsqueda | Detalles |
-|--------|---------|----------|
-| ![Splash](docs/screenshot/splash.png) | ![Búsqueda](docs/screenshot/search.png) | ![Detalles](docs/screenshot/detail.png) |
+| Splash | Búsqueda | Favoritos | Detalles |
+|--------|---------|-----------|----------|
+| ![Splash](docs/screenshot/splash.png) | ![Búsqueda](docs/screenshot/search.png) | ![Favoritos](docs/screenshot/favorites.png) | ![Detalles](docs/screenshot/details.png) |
 
 ---
 
