@@ -44,7 +44,7 @@ El **Configurator Pattern** se utilizó para gestionar la inyección de dependen
 
 | Splash | Búsqueda | Detalles |
 |--------|---------|----------|
-| ![Splash](./Assets/splash.png) | ![Búsqueda](./Assets/search.png) | ![Detalles](./Assets/details.png) |
+| ![Splash](docs/screenshot/splash.png) | ![Búsqueda](docs/screenshot/search.png) | ![Detalles](docs/screenshot/detail.png) |
 
 ---
 
