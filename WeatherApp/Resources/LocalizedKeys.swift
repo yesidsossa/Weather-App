@@ -11,6 +11,8 @@ enum LocalizedKeys {
         static let errorTitle = "search_error"
         static let noResults = "search_no_results"
         static let title = "search_tile"
+        static let favoriteTitle = "search_favorite_tile"
+
     }
 
     enum WeatherDetails {

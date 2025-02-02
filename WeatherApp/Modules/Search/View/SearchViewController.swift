@@ -4,6 +4,7 @@ protocol SearchViewProtocol {
     func showLocations(_ locations: [Location])
     func showError(_ message: String)
     func showFavorites(_ favorites: [FavoriteLocation])
+    func isFavorite(location: FavoriteLocation) -> Bool  
 }
 
 class SearchViewController: UIViewController, SearchViewProtocol {
@@ -115,6 +116,10 @@ class SearchViewController: UIViewController, SearchViewProtocol {
             self?.presenter?.didSelectLocation(location: location)
         }
 
+        searchResultsDataSource.didTapFavorite = { [weak self] location in
+            self?.presenter?.toggleFavorite(location: location)
+        }
+
         favoritesDataSource.didSelectFavorite = { [weak self] favorite in
             let location = Location(name: favorite.name, country: favorite.country)
             self?.presenter?.didSelectLocation(location: location)
@@ -123,6 +128,7 @@ class SearchViewController: UIViewController, SearchViewProtocol {
         favoritesDataSource.didRemoveFavorite = { [weak self] favorite in
             self?.presenter?.removeFavorite(location: favorite)
         }
+        
     }
 
     // MARK: - SearchViewProtocol
@@ -136,10 +142,17 @@ class SearchViewController: UIViewController, SearchViewProtocol {
 
     func showFavorites(_ favorites: [FavoriteLocation]) {
         favoritesDataSource.favorites = favorites
+        searchResultsDataSource.favoriteLocations = favorites
         DispatchQueue.main.async {
             self.toggleFavoritesVisibility()
             self.favoritesTableView.reloadData()
+            self.searchResultsTableView.reloadData() 
         }
+    }
+
+    
+    func isFavorite(location: FavoriteLocation) -> Bool {
+        return favoritesDataSource.favorites.contains { $0.name == location.name }
     }
 
     func showError(_ message: String) {
@@ -170,13 +183,29 @@ class SearchViewController: UIViewController, SearchViewProtocol {
 
 // MARK: - UITextFieldDelegate
 extension SearchViewController: UITextFieldDelegate {
+    
+    func textFieldDidChangeSelection(_ textField: UITextField) {
+        let currentText = textField.text ?? ""
+        
+        if currentText.isEmpty {
+            presenter?.loadFavorites()
+        }
+    }
+
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         let currentText = textField.text ?? ""
         let updatedText = (currentText as NSString).replacingCharacters(in: range, with: string)
 
         print("Buscando: \(updatedText)")
 
-        presenter?.searchLocation(query: updatedText)
+        if updatedText.isEmpty {
+            presenter?.loadFavorites() 
+        } else {
+            presenter?.searchLocation(query: updatedText)
+        }
+        
         return true
     }
 }
+
+

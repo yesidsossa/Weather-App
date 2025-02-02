@@ -8,3 +8,5 @@
 "app_title_label" = "Weather App";
 "slogan_label" = "Simple. Rápido. Preciso";
 "search_tile" = "Buscador de ciudades";
+"search_favorite_tile" = "⭐ Tus Favoritos";
+

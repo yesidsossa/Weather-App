@@ -3,6 +3,7 @@ import Foundation
 protocol SearchPresenterProtocol {
     func searchLocation(query: String)
     func didSelectLocation(location: Location)
+    func toggleFavorite(location: Location)
     func loadFavorites()
     func removeFavorite(location: FavoriteLocation)
 }
@@ -41,18 +42,37 @@ class SearchPresenter: SearchPresenterProtocol {
     }
 
     func didSelectLocation(location: Location) {
-        interactor.addFavorite(location) { [weak self] result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    self?.loadFavorites()
-                case .failure(let error):
-                    self?.view.showError(error.localizedDescription)
+        coordinator.navigateToWeatherDetails(for: location)
+    }
+
+    func toggleFavorite(location: Location) {
+        let favorite = FavoriteLocation(name: location.name, country: location.country, temp: nil, icon: nil)
+        
+        if view.isFavorite(location: favorite) {
+            interactor.removeFavorite(favorite) { [weak self] result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success:
+                        self?.loadFavorites()
+                    case .failure(let error):
+                        self?.view.showError(error.localizedDescription)
+                    }
+                }
+            }
+        } else {
+            interactor.addFavorite(location) { [weak self] result in
+                DispatchQueue.main.async {
+                    switch result {
+                    case .success:
+                        self?.loadFavorites()
+                    case .failure(let error):
+                        self?.view.showError(error.localizedDescription)
+                    }
                 }
             }
         }
-        coordinator.navigateToWeatherDetails(for: location)
     }
+
 
     func loadFavorites() {
         switch interactor.getFavorites() {
@@ -62,7 +82,7 @@ class SearchPresenter: SearchPresenterProtocol {
             view.showError(error.localizedDescription)
         }
     }
-
+    
     func removeFavorite(location: FavoriteLocation) {
         interactor.removeFavorite(location) { [weak self] result in
             DispatchQueue.main.async {
@@ -75,6 +95,4 @@ class SearchPresenter: SearchPresenterProtocol {
             }
         }
     }
-
 }
-

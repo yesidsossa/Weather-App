@@ -31,6 +31,15 @@ class SearchResultCell: UITableViewCell {
         return label
     }()
 
+    private let favoriteButton: UIButton = {
+        let button = UIButton(type: .system)
+        button.translatesAutoresizingMaskIntoConstraints = false
+        button.tintColor = .gray
+        return button
+    }()
+
+    var favoriteAction: (() -> Void)?
+
     // MARK: - Initializer
     override init(style: UITableViewCell.CellStyle, reuseIdentifier: String?) {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
@@ -47,6 +56,7 @@ class SearchResultCell: UITableViewCell {
         contentView.addSubview(containerView)
         containerView.addSubview(locationLabel)
         containerView.addSubview(countryLabel)
+        containerView.addSubview(favoriteButton)
 
         NSLayoutConstraint.activate([
             containerView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 5),
@@ -56,18 +66,44 @@ class SearchResultCell: UITableViewCell {
 
             locationLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 10),
             locationLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 15),
-            locationLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -15),
+            locationLabel.trailingAnchor.constraint(equalTo: favoriteButton.leadingAnchor, constant: -10),
 
             countryLabel.topAnchor.constraint(equalTo: locationLabel.bottomAnchor, constant: 5),
             countryLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 15),
-            countryLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -15),
-            countryLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10)
+            countryLabel.trailingAnchor.constraint(equalTo: favoriteButton.leadingAnchor, constant: -10),
+            countryLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -10),
+
+            favoriteButton.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -15),
+            favoriteButton.centerYAnchor.constraint(equalTo: containerView.centerYAnchor),
+            favoriteButton.widthAnchor.constraint(equalToConstant: 24),
+            favoriteButton.heightAnchor.constraint(equalToConstant: 24)
         ])
+
+        favoriteButton.addTarget(self, action: #selector(favoriteTapped), for: .touchUpInside)
     }
 
-    // MARK: - Configuration Method
-    func configure(with location: Location) {
+    // MARK: - Configuration
+    func configure(with location: Location, isFavorite: Bool, favoriteAction: @escaping () -> Void) {
         locationLabel.text = location.name
         countryLabel.text = location.country
+        updateFavoriteIcon(isFavorite: isFavorite)
+        self.favoriteAction = favoriteAction
     }
+
+    func updateFavoriteIcon(isFavorite: Bool) {
+        let imageName = isFavorite ? "star.fill" : "star"
+        let image = UIImage(systemName: imageName)
+        favoriteButton.setImage(image, for: .normal)
+        favoriteButton.tintColor = isFavorite ? .yellow : .gray
+    }
+
+    @objc private func favoriteTapped() {
+        guard let favoriteAction = favoriteAction else { return }
+        
+        let isCurrentlyFavorite = favoriteButton.tintColor == .yellow
+        updateFavoriteIcon(isFavorite: !isCurrentlyFavorite)
+        
+        favoriteAction()
+    }
+
 }
