@@ -1,6 +1,3 @@
-# This workflow will build a Swift project
-# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-swift
-
 name: iOS Unit Tests
 
 on:
@@ -13,27 +10,33 @@ on:
 
 jobs:
   test:
-    name: Run Xcode Tests
-    runs-on: macos-latest
-
+    runs-on: macos-14  # Usa la última versión de macOS con Xcode 15
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: true
 
-      - name: Select Xcode version
-        run: sudo xcode-select -switch /Applications/Xcode.app
+      - name: Select Xcode 15.4
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app/Contents/Developer
 
       - name: Install dependencies (if using CocoaPods)
         run: |
           if [ -f "Podfile" ]; then
             pod install --repo-update
           fi
-        working-directory: WeatherApp
 
-      - name: Build and Test
+      - name: Build and run unit tests
         run: |
           xcodebuild test \
-            -workspace WeatherApp.xcworkspace \
+            -workspace WeatherApp.xcworkspace \  # Si usas xcworkspace
             -scheme WeatherApp \
-            -destination 'platform=iOS Simulator,name=iPhone 14,OS=latest' \
-            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+            -destination "platform=iOS Simulator,name=iPhone 14,OS=latest" \
+            CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO | xcpretty
+
+      - name: Upload test results (optional)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xcode-test-results
+          path: ~/Library/Logs/DiagnosticReports
