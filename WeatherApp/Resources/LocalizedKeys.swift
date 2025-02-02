@@ -1,10 +1,16 @@
 import Foundation
 
 enum LocalizedKeys {
+    enum Splash {
+        static let appTitleLabel = "app_title_label"
+        static let sloganLabel = "slogan_label"
+    }
+    
     enum Search {
         static let placeholder = "search_placeholder"
         static let errorTitle = "search_error"
         static let noResults = "search_no_results"
+        static let title = "search_tile"
     }
 
     enum WeatherDetails {

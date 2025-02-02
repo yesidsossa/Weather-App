@@ -16,9 +16,12 @@ class SearchResultsDataSource: NSObject, UITableViewDataSource, UITableViewDeleg
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "searchCell", for: indexPath)
+        guard let cell = tableView.dequeueReusableCell(withIdentifier: "SearchResultCell", for: indexPath) as? SearchResultCell else {
+            return UITableViewCell()
+        }
+        
         let location = locations[indexPath.row]
-        cell.textLabel?.text = "\(location.name), \(location.country)"
+        cell.configure(with: location)
         return cell
     }
 

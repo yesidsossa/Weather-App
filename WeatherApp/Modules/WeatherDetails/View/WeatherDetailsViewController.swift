@@ -6,48 +6,87 @@ protocol WeatherDetailsViewProtocol {
 }
 
 class WeatherDetailsViewController: UIViewController, WeatherDetailsViewProtocol {
+    
+    // MARK: - Properties
     var presenter: WeatherDetailsPresenterProtocol?
-
-    private let locationLabel = UILabel()
-    private let currentTempLabel = UILabel()
-    private let forecastTableView = UITableView()
-
     private var forecastDays: [DayForecast] = []
 
+    // MARK: - UI Elements
+    private lazy var containerView: UIView = {
+        let view = UIView()
+        view.translatesAutoresizingMaskIntoConstraints = false
+        view.backgroundColor = .white
+        view.layer.cornerRadius = 12
+        view.layer.shadowColor = UIColor.black.cgColor
+        view.layer.shadowOpacity = 0.1
+        view.layer.shadowOffset = CGSize(width: 0, height: 2)
+        view.layer.shadowRadius = 4
+        return view
+    }()
+
+    private lazy var locationLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.boldSystemFont(ofSize: 24) 
+        label.textAlignment = .center
+        label.textColor = .darkGray
+        return label
+    }()
+
+    private lazy var currentTempLabel: UILabel = {
+        let label = UILabel()
+        label.translatesAutoresizingMaskIntoConstraints = false
+        label.font = UIFont.systemFont(ofSize: 20, weight: .semibold)
+        label.textAlignment = .center
+        label.textColor = .blue
+        label.accessibilityIdentifier = "currentTempLabel"
+        return label
+    }()
+
+    private lazy var forecastTableView: UITableView = {
+        let tableView = UITableView()
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.dataSource = self
+        tableView.separatorStyle = .none
+        tableView.register(ForecastCell.self, forCellReuseIdentifier: ForecastCell.identifier)
+        return tableView
+    }()
+
+    // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        title = LocalizationManager.localizedString(forKey: LocalizedKeys.WeatherDetails.title)
         setupUI()
-        setupNavigationBar()  // 🔥 Se agrega el botón de "Atrás"
+        setupNavigationBar()
         presenter?.loadWeatherDetails()
     }
 
+    // MARK: - UI Setup
     private func setupUI() {
-        locationLabel.textAlignment = .center
-        locationLabel.font = UIFont.boldSystemFont(ofSize: 24)
-        locationLabel.translatesAutoresizingMaskIntoConstraints = false
-
-        currentTempLabel.textAlignment = .center
-        currentTempLabel.font = UIFont.systemFont(ofSize: 20)
-        currentTempLabel.translatesAutoresizingMaskIntoConstraints = false
-        currentTempLabel.accessibilityIdentifier = "currentTempLabel"
-
-        forecastTableView.translatesAutoresizingMaskIntoConstraints = false
-        forecastTableView.dataSource = self
-        forecastTableView.register(UITableViewCell.self, forCellReuseIdentifier: "cell")
-
-        view.addSubview(locationLabel)
-        view.addSubview(currentTempLabel)
+        view.backgroundColor = .white
+        view.addSubview(containerView)
+        containerView.addSubview(locationLabel)
+        containerView.addSubview(currentTempLabel)
         view.addSubview(forecastTableView)
 
         NSLayoutConstraint.activate([
-            locationLabel.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
-            locationLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            // Contenedor
+            containerView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            containerView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 16),
+            containerView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -16),
 
+            // Ubicación
+            locationLabel.topAnchor.constraint(equalTo: containerView.topAnchor, constant: 16),
+            locationLabel.leadingAnchor.constraint(equalTo: containerView.leadingAnchor, constant: 16),
+            locationLabel.trailingAnchor.constraint(equalTo: containerView.trailingAnchor, constant: -16),
+
+            // Temperatura
             currentTempLabel.topAnchor.constraint(equalTo: locationLabel.bottomAnchor, constant: 10),
-            currentTempLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            currentTempLabel.centerXAnchor.constraint(equalTo: containerView.centerXAnchor),
+            currentTempLabel.bottomAnchor.constraint(equalTo: containerView.bottomAnchor, constant: -16),
 
-            forecastTableView.topAnchor.constraint(equalTo: currentTempLabel.bottomAnchor, constant: 20),
+            // Tabla de pronóstico
+            forecastTableView.topAnchor.constraint(equalTo: containerView.bottomAnchor, constant: 20),
             forecastTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             forecastTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             forecastTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
@@ -63,10 +102,12 @@ class WeatherDetailsViewController: UIViewController, WeatherDetailsViewProtocol
         )
     }
 
+    // MARK: - Actions
     @objc private func backButtonTapped() {
-        presenter?.navigateBack()  
+        presenter?.navigateBack()
     }
 
+    // MARK: - WeatherDetailsViewProtocol
     func showWeatherDetails(_ details: WeatherDetails) {
         locationLabel.text = "\(details.location.name), \(details.location.country)"
         currentTempLabel.text = LocalizationManager.localizedString(
@@ -93,9 +134,9 @@ extension WeatherDetailsViewController: UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        let cell = tableView.dequeueReusableCell(withIdentifier: ForecastCell.identifier, for: indexPath) as! ForecastCell
         let forecast = forecastDays[indexPath.row]
-        cell.textLabel?.text = "\(forecast.date): \(forecast.day.avgtemp_c)°C - \(forecast.day.condition.text)"
+        cell.configure(with: forecast)
         return cell
     }
 }

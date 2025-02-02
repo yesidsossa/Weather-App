@@ -5,3 +5,6 @@
 "weather_detail_title" = "Detalles del Clima";
 "weather_favorites_title" = "Ubicaciones Favoritas";
 "weather_remove_favorite" = "Eliminar";
+"app_title_label" = "Weather App";
+"slogan_label" = "Simple. Rápido. Preciso";
+"search_tile" = "Buscador de ciudades";

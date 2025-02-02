@@ -14,10 +14,26 @@ class SearchViewController: UIViewController, SearchViewProtocol {
     private lazy var searchTextField: UITextField = {
         let textField = UITextField()
         textField.placeholder = LocalizationManager.localizedString(forKey: LocalizedKeys.Search.placeholder)
-        textField.borderStyle = .roundedRect
+        textField.borderStyle = .none
+        textField.backgroundColor = .white
+        textField.layer.cornerRadius = 10
+        textField.layer.masksToBounds = true
+        textField.layer.shadowColor = UIColor.black.cgColor
+        textField.layer.shadowOpacity = 0.1
+        textField.layer.shadowOffset = CGSize(width: 0, height: 2)
+        textField.layer.shadowRadius = 4
         textField.translatesAutoresizingMaskIntoConstraints = false
         textField.delegate = self
         textField.accessibilityIdentifier = "searchField"
+        
+        let leftView = UIView(frame: CGRect(x: 0, y: 0, width: 40, height: 40))
+        let icon = UIImageView(image: UIImage(systemName: "magnifyingglass"))
+        icon.tintColor = .gray
+        icon.frame = CGRect(x: 10, y: 10, width: 20, height: 20)
+        leftView.addSubview(icon)
+        textField.leftView = leftView
+        textField.leftViewMode = .always
+
         return textField
     }()
 
@@ -25,6 +41,10 @@ class SearchViewController: UIViewController, SearchViewProtocol {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.isHidden = true
+        tableView.layer.cornerRadius = 10
+        tableView.layer.masksToBounds = true
+        tableView.separatorStyle = .none
+        tableView.backgroundColor = .white
         tableView.delegate = favoritesDataSource
         tableView.dataSource = favoritesDataSource
         tableView.register(FavoriteCell.self, forCellReuseIdentifier: "favoriteCell")
@@ -35,9 +55,13 @@ class SearchViewController: UIViewController, SearchViewProtocol {
     private lazy var searchResultsTableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.layer.cornerRadius = 10
+        tableView.layer.masksToBounds = true
+        tableView.separatorStyle = .none
+        tableView.backgroundColor = .white
         tableView.delegate = searchResultsDataSource
         tableView.dataSource = searchResultsDataSource
-        tableView.register(UITableViewCell.self, forCellReuseIdentifier: "searchCell")
+        tableView.register(SearchResultCell.self, forCellReuseIdentifier: "SearchResultCell")
         tableView.accessibilityIdentifier = "searchResultsTableView"
         return tableView
     }()
@@ -49,6 +73,7 @@ class SearchViewController: UIViewController, SearchViewProtocol {
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
+        title = LocalizationManager.localizedString(forKey: LocalizedKeys.Search.title)
         setupUI()
         setupEventHandlers()
         presenter?.loadFavorites()
@@ -61,7 +86,7 @@ class SearchViewController: UIViewController, SearchViewProtocol {
 
     // MARK: - UI Setup
     private func setupUI() {
-        view.backgroundColor = .white
+        view.backgroundColor = UIColor.systemGroupedBackground
         view.addSubview(searchTextField)
         view.addSubview(favoritesTableView)
         view.addSubview(searchResultsTableView)
@@ -70,17 +95,17 @@ class SearchViewController: UIViewController, SearchViewProtocol {
             searchTextField.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
             searchTextField.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
             searchTextField.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
-            searchTextField.heightAnchor.constraint(equalToConstant: 40),
+            searchTextField.heightAnchor.constraint(equalToConstant: 50),
 
             favoritesTableView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 10),
-            favoritesTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            favoritesTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            favoritesTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            favoritesTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            favoritesTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            favoritesTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20),
 
             searchResultsTableView.topAnchor.constraint(equalTo: searchTextField.bottomAnchor, constant: 10),
-            searchResultsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            searchResultsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            searchResultsTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            searchResultsTableView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 20),
+            searchResultsTableView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -20),
+            searchResultsTableView.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20)
         ])
     }
 
@@ -118,7 +143,7 @@ class SearchViewController: UIViewController, SearchViewProtocol {
     }
 
     func showError(_ message: String) {
-        guard !(searchTextField.text?.isEmpty ?? true) else { return } 
+        guard !(searchTextField.text?.isEmpty ?? true) else { return }
         
         DispatchQueue.main.async {
             let alert = UIAlertController(title: "Error", message: message, preferredStyle: .alert)
@@ -126,7 +151,6 @@ class SearchViewController: UIViewController, SearchViewProtocol {
             self.present(alert, animated: true)
         }
     }
-
 
     private func toggleFavoritesVisibility() {
         let hasFavorites = !favoritesDataSource.favorites.isEmpty
@@ -150,7 +174,7 @@ extension SearchViewController: UITextFieldDelegate {
         let currentText = textField.text ?? ""
         let updatedText = (currentText as NSString).replacingCharacters(in: range, with: string)
 
-        print("Buscando: \(updatedText)") 
+        print("Buscando: \(updatedText)")
 
         presenter?.searchLocation(query: updatedText)
         return true
