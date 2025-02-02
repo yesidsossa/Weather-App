@@ -22,6 +22,10 @@ El **Configurator Pattern** se utilizó para gestionar la inyección de dependen
 ### 📌 **Diagrama de Arquitectura VIPER + Coordinator**
 ![Diagrama VIPER + Coordinator](docs/diagrams/architecture.png)
 
+
+### 📌 **Diagrama de Coordinator pattern**
+![Diagrama VIPER + Coordinator](docs/diagrams/coordinator.drawio.png)
+
 ---
 
 ## 📐 Patrones de Diseño Utilizados
