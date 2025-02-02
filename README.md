@@ -1,4 +1,4 @@
-# 🌦️ WeatherApp - iOS Engineer Case Study 2024
+# 🌦️ WeatherApp - iOS
 
 ## 📌 Descripción del Proyecto
 WeatherApp es una aplicación iOS desarrollada en **Swift**, que permite a los usuarios buscar ubicaciones y visualizar la información meteorológica actual y el pronóstico de los próximos 4 días. La aplicación implementa **VIPER**, **Coordinator Pattern** y **Configurator Pattern** para garantizar una arquitectura modular, escalable y de fácil mantenimiento.
