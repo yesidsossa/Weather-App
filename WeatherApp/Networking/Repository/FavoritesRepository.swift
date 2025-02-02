@@ -11,12 +11,20 @@ class FavoritesRepository: FavoritesRepositoryProtocol {
     private let favoritesKey = "favoriteLocations"
 
     func getFavorites() -> Result<[FavoriteLocation], Error> {
-        if let data = UserDefaults.standard.data(forKey: favoritesKey),
-           let favorites = try? JSONDecoder().decode([FavoriteLocation].self, from: data) {
-            return .success(favorites)
+        if let data = UserDefaults.standard.data(forKey: favoritesKey) {
+
+            do {
+                let favorites = try JSONDecoder().decode([FavoriteLocation].self, from: data)
+                return .success(favorites)
+            } catch {
+                return .failure(NSError(domain: "FavoritesRepository", code: -2, userInfo: [NSLocalizedDescriptionKey: "Error al decodificar los favoritos"]))
+            }
+        } else {
+            return .success([])
         }
-        return .failure(NSError(domain: "FavoritesRepository", code: -1, userInfo: [NSLocalizedDescriptionKey: "No se pudieron cargar los favoritos"]))
     }
+
+
 
 
     func addFavorite(_ location: FavoriteLocation) -> Result<Void, Error> {
@@ -40,14 +48,17 @@ class FavoritesRepository: FavoritesRepositoryProtocol {
     }
 
 
+
     func removeFavorite(_ location: FavoriteLocation) -> Result<Void, Error> {
         switch getFavorites() {
         case .success(var favorites):
             favorites.removeAll { $0.name == location.name }
+            
             if saveFavorites(favorites) {
                 return .success(())
             }
             return .failure(NSError(domain: "FavoritesRepository", code: -3, userInfo: [NSLocalizedDescriptionKey: "No se pudo eliminar el favorito"]))
+            
         case .failure(let error):
             return .failure(error)
         }
