@@ -20,7 +20,7 @@ El **Coordinator Pattern** se implementó para manejar la navegación de manera 
 El **Configurator Pattern** se utilizó para gestionar la inyección de dependencias en cada módulo sin que los `Coordinators` o `Presenters` tengan que crearlas directamente. Esto **mejora la modularidad** y **evita el acoplamiento innecesario**.
 
 ### 📌 **Diagrama de Arquitectura VIPER + Coordinator**
-![Diagrama VIPER + Coordinator](docs/diagrams/architecture.png)
+![Diagrama VIPER + Coordinator](docs/diagrams/architecture.jpeg)
 
 
 ### 📌 **Diagrama de Coordinator pattern**
